@@ -1,14 +1,37 @@
 <script setup>
-import { computed } from 'vue'
-import { CATEGORIES } from '../composables/usePlaces'
+import { computed, onMounted, ref } from 'vue'
+import { CATEGORIES, getRandomPlaces } from '../composables/usePlaces'
 import { usePosts } from '../composables/usePosts'
 import busanCharacter from '../assets/busan-charactor.png'
+import PlaceModal from './PlaceModal.vue'
 
 const { getRecent } = usePosts()
 const recent = computed(() => getRecent(6))
 
+const recommendations = ref({})
+const selectedPlace = ref(null)
+const selectedCategoryKey = ref(null)
+
+onMounted(() => {
+  const result = {}
+  CATEGORIES.forEach((cat) => {
+    result[cat.key] = getRandomPlaces(cat.key, 5)
+  })
+  recommendations.value = result
+})
+
 function categoryLabel(key) {
   return CATEGORIES.find((c) => c.key === key)?.label || key
+}
+
+function openModal(categoryKey, place) {
+  selectedCategoryKey.value = categoryKey
+  selectedPlace.value = place
+}
+
+function closeModal() {
+  selectedPlace.value = null
+  selectedCategoryKey.value = null
 }
 </script>
 
@@ -24,17 +47,37 @@ function categoryLabel(key) {
     </div>
   </section>
 
-  <section class="container section">
-    <h2 class="section-title">카테고리 둘러보기</h2>
-    <div class="category-grid">
+  <section
+    v-for="cat in CATEGORIES"
+    :key="cat.key"
+    class="container section reco-section"
+  >
+    <div class="section-header">
+      <h2 class="section-title">{{ cat.label }} 추천</h2>
+      <RouterLink :to="`/board/${cat.key}`" class="more-link">더보기 →</RouterLink>
+    </div>
+
+    <div class="reco-row">
       <RouterLink
-        v-for="cat in CATEGORIES"
-        :key="cat.key"
+        v-for="place in recommendations[cat.key] || []"
+        :key="place.id"
         :to="`/board/${cat.key}`"
-        class="category-card card"
+        class="reco-card card"
       >
-        <span class="category-label">{{ cat.label }}</span>
-        <span class="category-go">바로가기 →</span>
+        <div class="reco-image">
+          <img v-if="place.image" :src="place.image" :alt="place.title" loading="lazy" />
+          <div v-else class="reco-placeholder">
+            <svg viewBox="0 0 48 48" width="28" height="28">
+              <rect x="4" y="8" width="40" height="32" rx="4" fill="none" stroke="var(--line)" stroke-width="2" />
+              <circle cx="16" cy="18" r="4" fill="var(--line)" />
+              <path d="M6 34 L18 22 L26 30 L34 20 L42 34 Z" fill="var(--line)" />
+            </svg>
+          </div>
+        </div>
+        <div class="reco-body">
+          <p class="reco-title">{{ place.title }}</p>
+          <p class="reco-address">{{ place.address || '주소 정보 없음' }}</p>
+        </div>
       </RouterLink>
     </div>
   </section>
@@ -122,42 +165,105 @@ function categoryLabel(key) {
 }
 
 .section {
-  padding: 40px 0;
+  padding: 32px 0;
+}
+
+.reco-section {
+  padding: 20px 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
 }
 
 .section-title {
-  font-size: 20px;
-  margin-bottom: 16px;
+  font-size: 19px;
 }
 
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
+.more-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal-500);
+  white-space: nowrap;
 }
 
-.category-card {
-  padding: 20px 16px;
+.more-link:hover {
+  text-decoration: underline;
+}
+
+.reco-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: transform 0.15s ease;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x proximity;
 }
 
-.category-card:hover {
+.reco-card {
+  flex: 0 0 160px;
+  scroll-snap-align: start;
+  overflow: hidden;
+  transition: transform 0.15s ease;
+  cursor: pointer; 
+}
+
+.reco-card:focus-visible {
+  outline: 2px solid var(--coral-500);
+  outline-offset: 2px;
+}
+
+.reco-card:hover {
   transform: translateY(-3px);
 }
 
-.category-label {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--navy-900);
+.reco-image {
+  width: 100%;
+  height: 110px;
+  background: var(--sand-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.category-go {
+.reco-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reco-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.reco-body {
+  padding: 10px 12px 12px;
+}
+
+.reco-title {
   font-size: 13px;
-  color: var(--teal-500);
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin: 0 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reco-address {
+  font-size: 11px;
+  color: var(--ink-500);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recent-list {

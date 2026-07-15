@@ -41,3 +41,16 @@ export function getPlaces(key) {
 export function getPlaceById(key, id) {
   return getPlaces(key).find((p) => String(p.id) === String(id))
 }
+
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+export function getRandomPlaces(key, count = 5) {
+  return shuffle(getPlaces(key)).slice(0, count)
+}
