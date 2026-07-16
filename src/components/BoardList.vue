@@ -1,28 +1,57 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { getCategory } from '../composables/usePlaces'
-import { usePosts } from '../composables/usePosts'
+import { usePosts, BOARD_CATEGORIES } from '../composables/usePosts'
 
 const route = useRoute()
-const { search } = usePosts()
+const { search, isBookmarked, toggleBookmark, bookmarkedIds } = usePosts()
+
+const sortOption = ref('latest')
+const SORT_OPTIONS = [
+  { value: 'latest', label: '최신순' },
+  { value: 'oldest', label: '오래된순' },
+  { value: 'likes', label: '좋아요순' },
+  { value: 'bookmarks', label: '북마크순' },
+]
 
 const keyword = ref('')
 const page = ref(1)
 const perPage = 7
 
 const categoryKey = computed(() => route.params.category)
-const categoryLabel = computed(() => getCategory(categoryKey.value)?.label || categoryKey.value)
+const categoryLabel = computed(
+  () => BOARD_CATEGORIES.find((c) => c.key === categoryKey.value)?.label || categoryKey.value
+)
 
 const filtered = computed(() => search(categoryKey.value, keyword.value))
-const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / perPage)))
+
+const sorted = computed(() => {
+  const list = [...filtered.value]
+  if (sortOption.value === 'oldest') {
+    return list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+  }
+  if (sortOption.value === 'likes') {
+    return list.sort((a, b) => (b.likes || 0) - (a.likes || 0))
+  }
+  if (sortOption.value === 'bookmarks') {
+    return list.sort((a, b) => {
+      const aBookmarked = isBookmarked(a.id) ? 1 : 0
+      const bBookmarked = isBookmarked(b.id) ? 1 : 0
+      return bBookmarked - aBookmarked
+    })
+  }
+  // latest (기본값) — search()가 이미 최신순 정렬을 해서 반환하므로 그대로 사용
+  return list
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(sorted.value.length / perPage)))
 const paged = computed(() => {
   const start = (page.value - 1) * perPage
-  return filtered.value.slice(start, start + perPage)
+  return sorted.value.slice(start, start + perPage)
 })
 
 // 카테고리 이동 또는 검색어 변경 시 1페이지로
-watch([categoryKey, keyword], () => {
+watch([categoryKey, keyword, sortOption], () => {
   page.value = 1
 })
 
@@ -35,6 +64,18 @@ function formatDate(iso) {
   <section class="container board">
     <p class="breadcrumb">홈 &gt; {{ categoryLabel }} 게시판</p>
 
+    <div class="sub-tabs">
+      <RouterLink
+        v-for="cat in BOARD_CATEGORIES"
+        :key="cat.key"
+        :to="`/board/${cat.key}`"
+        class="sub-tab"
+        :class="{ active: cat.key === categoryKey }"
+      >
+        {{ cat.label }}
+      </RouterLink>
+    </div>
+
     <div class="board-toolbar">
       <input
         v-model="keyword"
@@ -42,6 +83,11 @@ function formatDate(iso) {
         class="search-input"
         placeholder="게시글 검색어를 입력하세요"
       />
+      <select v-model="sortOption" class="sort-select">
+        <option v-for="opt in SORT_OPTIONS" :key="opt.value" :value="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
       <RouterLink :to="`/board/${categoryKey}/write`" class="btn btn-primary">
         + 글쓰기
       </RouterLink>
@@ -53,7 +99,9 @@ function formatDate(iso) {
           <tr>
             <th class="col-no">번호</th>
             <th>제목</th>
+            <th class="col-likes">❤️</th>
             <th class="col-date">작성일</th>
+            <th class="col-bookmark">북마크</th>
           </tr>
         </thead>
         <tbody>
@@ -69,8 +117,21 @@ function formatDate(iso) {
             @click="$router.push(`/board/${categoryKey}/${post.id}`)"
           >
             <td class="col-no">{{ post.id }}</td>
-            <td class="post-title-cell">{{ post.title }}</td>
+            <td class="post-title-cell">
+              {{ post.title }}
+              <span v-for="tag in post.tags?.slice(0, 2)" :key="tag" class="mini-tag">#{{ tag }}</span>
+            </td>
+            <td class="col-likes">{{ post.likes || 0 }}</td>
             <td class="col-date">{{ formatDate(post.created_at) }}</td>
+            <td class="col-bookmark">
+              <button
+                class="bookmark-toggle"
+                :class="{ active: isBookmarked(post.id) }"
+                @click.stop="toggleBookmark(post.id)"
+              >
+                {{ isBookmarked(post.id) ? '🔖' : '📑' }}
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -141,7 +202,7 @@ function formatDate(iso) {
 
 .col-no,
 .col-date {
-  width: 90px;
+  width: 120px;
   text-align: center;
 }
 
@@ -203,5 +264,64 @@ function formatDate(iso) {
   background: var(--navy-900);
   color: var(--white);
   border-color: var(--navy-900);
+}
+
+.col-likes,
+.col-bookmark {
+  width: 70px;
+  text-align: center;
+}
+
+.mini-tag {
+  font-size: 11px;
+  color: var(--teal-500);
+  margin-left: 6px;
+}
+
+.bookmark-toggle {
+  background: none;
+  border: none;
+  font-size: 14px;
+}
+
+.bookmark-toggle.active {
+  filter: saturate(1.4);
+}
+
+.sub-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.sub-tab {
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--navy-700);
+}
+
+.sub-tab:hover {
+  background: var(--sand-100);
+}
+
+.sub-tab.active {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+  color: var(--white);
+}
+
+.sort-select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-body);
+  background: var(--white);
+  color: var(--navy-700);
 }
 </style>

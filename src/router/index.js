@@ -4,15 +4,18 @@ import BoardList from '../components/BoardList.vue'
 import PostDetail from '../components/PostDetail.vue'
 import PostCreate from '../components/PostCreate.vue'
 import MapView from '../components/MapView.vue'
+import BookmarksPage from '../components/BookmarksPage.vue'
 
 
 const routes = [
   { path: '/', name: 'home', component: Home },
+  { path: '/board', redirect: '/board/all' },
   { path: '/map', name: 'map', component: MapView },
   { path: '/board/:category', name: 'board-list', component: BoardList, props: true },
   { path: '/board/:category/write', name: 'post-write', component: PostCreate, props: true },
   { path: '/board/:category/edit/:id', name: 'post-edit', component: PostCreate, props: true },
   { path: '/board/:category/:id', name: 'post-detail', component: PostDetail, props: true },
+ { path: '/bookmarks', name: 'bookmarks', component: BookmarksPage },
 ]
 
 const router = createRouter({

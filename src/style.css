@@ -3,18 +3,21 @@
 
 :root {
   /* 부산: 밤바다·항구 불빛 컨셉 */
-  --navy-900: #0e2a3d;
-  --navy-700: #17415a;
-  --teal-500: #1c7c82;
-  --coral-500: #ff7a50;
-  --coral-600: #f0633a;
-  --sand-50: #f3f6f6;
-  --sand-100: #e8eeee;
-  --ink-900: #16232c;
-  --ink-500: #4a5c66;
-  --line: #d9e2e2;
+--navy-900: #123b42;   /* 기존 #0e2a3d → AED8DC와 어울리는 딥 틸 */
+--navy-700: #1d5560;   /* 기존 #17415a */
+--teal-500: #4a959b;   /* 기존 #1c7c82 → AED8DC 계열로 톤 조정 */
+--coral-500: #ff7a50;  /* 그대로 유지 — 포인트 컬러 */
+--coral-600: #f0633a;  /* 그대로 유지 */
+--sand-50: #eef7f8;    /* 기존 #f3f6f6 → 살짝 민트빛 배경 */
+--sand-100: #dceff1;   /* 기존 #e8eeee */
+--ink-900: #16232c;    /* 그대로 유지 */
+--ink-500: #4d6570;    /* 기존 #4a5c66 → 약간 쿨톤 */
+--line: #cbe4e7;       /* 기존 #d9e2e2 */
   --white: #ffffff;
-
+--sky-300: #aed8dc;
+--sky-light: #dceef0;   /* 헤더/히어로 배경 — AED8DC보다 옅은 톤 */
+--sky-mid: #aed8dc;      /* 요청하신 메인 컬러 — 강조용 */
+--header-text: #123b42;  /* 밝은 배경 위에서 쓸 진한 텍스트 컬러 */
   --font-display: 'Gowun Batang', serif;
   --font-body: 'Pretendard', -apple-system, 'Noto Sans KR', sans-serif;
 

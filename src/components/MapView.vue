@@ -6,6 +6,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { CATEGORIES, getPlaces } from '../composables/usePlaces'
+import PlaceModal from './PlaceModal.vue'
 
 // Vite 번들 환경에서 Leaflet 기본 마커 아이콘 경로가 깨지는 문제 보정
 delete L.Icon.Default.prototype._getIconUrl
@@ -22,9 +23,27 @@ const mapEl = ref(null)
 let map = null
 let markerLayer = null
 
+const selectedPlace = ref(null)
+const selectedCategoryKey = ref(null)
+
 const places = computed(() =>
   getPlaces(activeCategory.value).filter((p) => p.lat && p.lng)
 )
+
+function categoryLabel(key) {
+  return CATEGORIES.find((c) => c.key === key)?.label || key
+}
+
+function openModal(place) {
+  console.log('마커 클릭됨:', place) // 임시 디버그용
+  selectedCategoryKey.value = activeCategory.value
+  selectedPlace.value = place
+}
+
+function closeModal() {
+  selectedPlace.value = null
+  selectedCategoryKey.value = null
+}
 
 function renderMarkers() {
   if (!map) return
@@ -32,11 +51,8 @@ function renderMarkers() {
 
   places.value.forEach((p) => {
     const marker = L.marker([p.lat, p.lng])
-    marker.bindPopup(
-      `<strong>${p.title}</strong><br/>${p.address || '주소 정보 없음'}${
-        p.tel ? `<br/>${p.tel}` : ''
-      }`
-    )
+    // 클릭 시 홈 화면과 동일한 PlaceModal을 띄움 (Leaflet 기본 팝업 대신)
+    marker.on('click', () => openModal(p))
     markerLayer.addLayer(marker)
   })
 
@@ -80,10 +96,18 @@ watch(activeCategory, renderMarkers)
       </button>
     </div>
 
-    <p class="result-count">{{ places.length }}개 장소 표시 중</p>
+    <p class="result-count">{{ places.length }}개 장소 표시 중 · 마커를 클릭하면 상세 정보가 열려요</p>
 
     <div ref="mapEl" class="map-container card"></div>
   </section>
+
+  <PlaceModal
+    v-if="selectedPlace"
+    :place="selectedPlace"
+    :category-key="selectedCategoryKey"
+    :category-label="categoryLabel(selectedCategoryKey)"
+    @close="closeModal"
+  />
 </template>
 
 <style scoped>

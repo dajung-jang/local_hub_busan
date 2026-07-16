@@ -1,6 +1,5 @@
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { CATEGORIES } from './composables/usePlaces'
 import Chatbot from './components/Chatbot.vue'
 
 const route = useRoute()
@@ -16,21 +15,18 @@ const route = useRoute()
         <RouterLink to="/map" class="tab" :class="{ active: route.path === '/map' }">
           🗺️ 지도
         </RouterLink>
-        <RouterLink
-          v-for="cat in CATEGORIES"
-          :key="cat.key"
-          :to="`/board/${cat.key}`"
-          class="tab"
-          :class="{ active: route.params.category === cat.key }"
-        >
-          {{ cat.label }}
+        <RouterLink to="/bookmarks" class="tab" :class="{ active: route.path === '/bookmarks' }">
+          🔖 북마크
+        </RouterLink>
+        <RouterLink to="/board/all" class="tab" :class="{ active: route.path.startsWith('/board') }">
+          📝 게시글
         </RouterLink>
       </nav>
     </div>
     <svg class="wave" viewBox="0 0 1200 40" preserveAspectRatio="none">
       <path
         d="M0,20 C150,40 350,0 600,20 C850,40 1050,0 1200,20 L1200,40 L0,40 Z"
-        fill="var(--navy-900)"
+        fill="var(--sky-light)"
       />
     </svg>
   </header>
@@ -50,7 +46,7 @@ const route = useRoute()
 
 <style scoped>
 .site-header {
-  background: var(--navy-900);
+  background: var(--sky-light); 
   position: relative;
   padding-bottom: 6px;
 }
@@ -69,7 +65,7 @@ const route = useRoute()
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 700;
-  color: var(--white);
+  color: var(--header-text); /* 기존 var(--white) */
   white-space: nowrap;
 }
 
@@ -94,13 +90,13 @@ const route = useRoute()
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(18, 59, 66, 0.65); /* 기존 rgba(255, 255, 255, 0.75) */
   white-space: nowrap;
 }
 
 .tab:hover {
-  color: var(--white);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--header-text); /* 기존 var(--white) */
+  background: rgba(18, 59, 66, 0.08); /* 기존 rgba(255, 255, 255, 0.08) */
 }
 
 .tab.active {

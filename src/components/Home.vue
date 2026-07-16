@@ -54,23 +54,28 @@ function closeModal() {
   >
     <div class="section-header">
       <h2 class="section-title">{{ cat.label }} 추천</h2>
-      <RouterLink :to="`/board/${cat.key}`" class="more-link">더보기 →</RouterLink>
+      <RouterLink :to="`/board/${cat.key}`" class="community-link">
+        {{ cat.label }} 커뮤니티 바로가기 →
+      </RouterLink>
     </div>
 
     <div class="reco-row">
-      <RouterLink
+      <div
         v-for="place in recommendations[cat.key] || []"
         :key="place.id"
-        :to="`/board/${cat.key}`"
         class="reco-card card"
+        role="button"
+        tabindex="0"
+        @click="openModal(cat.key, place)"
+        @keyup.enter="openModal(cat.key, place)"
       >
         <div class="reco-image">
           <img v-if="place.image" :src="place.image" :alt="place.title" loading="lazy" />
           <div v-else class="reco-placeholder">
             <svg viewBox="0 0 48 48" width="28" height="28">
-              <rect x="4" y="8" width="40" height="32" rx="4" fill="none" stroke="var(--line)" stroke-width="2" />
-              <circle cx="16" cy="18" r="4" fill="var(--line)" />
-              <path d="M6 34 L18 22 L26 30 L34 20 L42 34 Z" fill="var(--line)" />
+              <rect x="4" y="8" width="40" height="32" rx="4" fill="none" stroke="var(--line)" stroke-width="2"></rect>
+              <circle cx="16" cy="18" r="4" fill="var(--line)"></circle>
+              <path d="M6 34 L18 22 L26 30 L34 20 L42 34 Z" fill="var(--line)"></path>
             </svg>
           </div>
         </div>
@@ -78,7 +83,7 @@ function closeModal() {
           <p class="reco-title">{{ place.title }}</p>
           <p class="reco-address">{{ place.address || '주소 정보 없음' }}</p>
         </div>
-      </RouterLink>
+      </div>
     </div>
   </section>
 
@@ -98,12 +103,20 @@ function closeModal() {
       </RouterLink>
     </div>
   </section>
+
+  <PlaceModal
+    v-if="selectedPlace"
+    :place="selectedPlace"
+    :category-key="selectedCategoryKey"
+    :category-label="categoryLabel(selectedCategoryKey)"
+    @close="closeModal"
+  />
 </template>
 
 <style scoped>
 .hero {
-  background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
-  color: var(--white);
+  background: linear-gradient(135deg, var(--sky-light), var(--sky-mid)); /* 기존 var(--navy-900), var(--navy-700) */
+  color: var(--header-text); /* 추가 */
   padding: 56px 0 64px;
 }
 
@@ -152,14 +165,14 @@ function closeModal() {
 }
 
 .hero h1 {
-  color: var(--white);
+  color: var(--header-text); /* 기존 var(--white) */
   font-size: 36px;
   line-height: 1.3;
   margin-bottom: 12px;
 }
 
 .hero-desc {
-  color: rgba(255, 255, 255, 0.75);
+ color: rgba(18, 59, 66, 0.75); /* 기존 rgba(255, 255, 255, 0.75) */
   font-size: 15px;
   margin: 0;
 }
@@ -183,40 +196,40 @@ function closeModal() {
   font-size: 19px;
 }
 
-.more-link {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--teal-500);
+.community-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--navy-900);
+  padding: 6px 14px;
+  border-radius: 999px;
   white-space: nowrap;
+  transition: background 0.15s ease;
 }
 
-.more-link:hover {
-  text-decoration: underline;
+.community-link:hover {
+  background: var(--coral-500);
 }
 
 .reco-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  scroll-snap-type: x proximity;
 }
 
 .reco-card {
-  flex: 0 0 160px;
-  scroll-snap-align: start;
   overflow: hidden;
   transition: transform 0.15s ease;
-  cursor: pointer; 
+  cursor: pointer;
+}
+
+.reco-card:hover {
+  transform: translateY(-3px);
 }
 
 .reco-card:focus-visible {
   outline: 2px solid var(--coral-500);
   outline-offset: 2px;
-}
-
-.reco-card:hover {
-  transform: translateY(-3px);
 }
 
 .reco-image {
@@ -296,7 +309,7 @@ function closeModal() {
   font-size: 12px;
   font-weight: 700;
   color: var(--teal-500);
-  background: rgba(28, 124, 130, 0.1);
+   background: rgba(174, 216, 220, 0.35);
   padding: 3px 8px;
   border-radius: 999px;
   white-space: nowrap;

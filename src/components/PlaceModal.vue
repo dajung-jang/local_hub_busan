@@ -1,4 +1,8 @@
 <script setup>
+import { usePlaceBookmarks } from '../composables/usePlaceBookmarks'
+
+const { isBookmarked, toggleBookmark } = usePlaceBookmarks()
+
 const props = defineProps({
   place: { type: Object, required: true },
   categoryKey: { type: String, required: true },
@@ -43,9 +47,16 @@ function mapSearchUrl(place) {
         </p>
 
         <div class="modal-actions">
+          <button
+            class="btn btn-ghost bookmark-btn"
+            :class="{ active: isBookmarked(categoryKey, place.id) }"
+            @click="toggleBookmark(categoryKey, place.id)"
+          >
+            {{ isBookmarked(categoryKey, place.id) ? '🔖 북마크됨' : '📑 북마크' }}
+          </button>
           <a v-if="place.lat && place.lng" :href="mapSearchUrl(place)" target="_blank" rel="noopener" class="btn btn-ghost">지도에서 보기</a>
-          <RouterLink :to="`/board/${categoryKey}/write`" class="btn btn-primary" @click="emit('close')">커뮤니티에 후기 남기기</RouterLink>
         </div>
+        <RouterLink :to="`/board/${categoryKey}/write`" class="btn btn-primary full-width" @click="emit('close')">커뮤니티에 후기 남기기</RouterLink>
       </div>
     </div>
   </div>
@@ -59,7 +70,7 @@ function mapSearchUrl(place) {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 60;
+  z-index: 9999;
   padding: 20px;
 }
 
@@ -115,7 +126,7 @@ function mapSearchUrl(place) {
   font-size: 11px;
   font-weight: 700;
   color: var(--teal-500);
-  background: rgba(28, 124, 130, 0.1);
+  background: rgba(174, 216, 220, 0.35);
   padding: 3px 8px;
   border-radius: 999px;
   margin-bottom: 8px;
@@ -149,5 +160,16 @@ function mapSearchUrl(place) {
 .modal-actions .btn {
   flex: 1;
   font-size: 13px;
+}
+
+.bookmark-btn.active {
+  border-color: var(--coral-500);
+  background: rgba(255, 122, 80, 0.08);
+  color: var(--coral-600);
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 8px;
 }
 </style>
