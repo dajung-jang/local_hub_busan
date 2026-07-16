@@ -11,6 +11,10 @@
     <meta property="og:image" content="/src/assets/busan_charactor.png" />
     <meta property="og:url" content="http://localhost:5173/" />
     <meta name="twitter:card" content="summary_large_image" />
+    <!-- FullCalendar styles (via CDN to avoid Vite subpath export issues) -->
+    <link rel="stylesheet" href="https://unpkg.com/@fullcalendar/common@6.1.21/main.min.css" onerror="this.href='/fullcalendar-fallback.css'" />
+    <link rel="stylesheet" href="https://unpkg.com/@fullcalendar/daygrid@6.1.21/main.min.css" onerror="this.href='/fullcalendar-fallback.css'" />
+    <link rel="stylesheet" href="https://unpkg.com/@fullcalendar/timegrid@6.1.21/main.min.css" onerror="this.href='/fullcalendar-fallback.css'" />
   </head>
   <body>
     <div id="app"></div>

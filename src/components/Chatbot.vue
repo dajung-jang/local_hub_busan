@@ -81,6 +81,12 @@ async function sendText(text) {
 
    try {
     const context = buildContext(text)
+    // 데이터 없음(noData)인 쿼리는 로컬에서 안내만 하고 API 호출은 생략
+    if (context.noData) {
+      messages.value.push({ role: 'bot', text: context.note })
+      loading.value = false
+      return
+    }
     const contextText = formatContextForPrompt(context)
     const history = toApiHistory()
     const intro = await askChatbot(text, contextText, history)

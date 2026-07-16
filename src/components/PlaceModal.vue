@@ -11,6 +11,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+// 단일 이미지 사용: 대표 이미지 하나만 로드
+function mainImageFor(p) {
+  if (!p) return null
+  return p.firstimage || p.image || p.firstimage2 || null
+}
+
 function mapSearchUrl(place) {
   if (place.lat && place.lng) {
     return `https://map.kakao.com/link/map/${encodeURIComponent(place.title)},${place.lat},${place.lng}`
@@ -23,9 +29,8 @@ function mapSearchUrl(place) {
   <div class="modal-backdrop" @click.self="emit('close')">
     <div class="modal card">
       <button class="modal-close" @click="emit('close')">✕</button>
-
       <div class="modal-image">
-        <img v-if="place.image" :src="place.image" :alt="place.title" />
+        <img v-if="mainImageFor(place)" :src="mainImageFor(place)" :alt="place.title" />
         <div v-else class="modal-placeholder">
           <svg viewBox="0 0 48 48" width="36" height="36">
             <rect x="4" y="8" width="40" height="32" rx="4" fill="none" stroke="var(--line)" stroke-width="2"></rect>
@@ -39,11 +44,32 @@ function mapSearchUrl(place) {
         <span class="modal-category">{{ categoryLabel }}</span>
         <h3 class="modal-title">{{ place.title }}</h3>
 
-        <p class="modal-row" v-if="place.address">
-          <span class="modal-icon">📍</span>{{ place.address }}
+        <p class="modal-row" v-if="place.addr1 || place.address">
+          <span class="modal-icon">📍</span>{{ place.addr1 || place.address }}
         </p>
         <p class="modal-row" v-if="place.tel">
           <span class="modal-icon">☎</span>{{ place.tel }}
+        </p>
+
+        <p class="modal-row" v-if="place.eventstart || place.eventend">
+          <span class="modal-icon">📅</span>{{ place.eventstart || '-' }} — {{ place.eventend || '-' }}
+        </p>
+
+        <p class="modal-row" v-if="place.playtime">
+          <span class="modal-icon">⏰</span>{{ place.playtime }}
+        </p>
+
+        <p class="modal-row" v-if="place.eventplace">
+          <span class="modal-icon">📌</span>{{ place.eventplace }}
+        </p>
+
+          <div class="modal-row" v-if="place.program">
+            <strong>프로그램:</strong>
+            <div class="program-content">{{ place.program }}</div>
+          </div>
+
+        <p class="modal-row" v-if="place.usetimefestival">
+          <span class="modal-icon">💰</span>{{ place.usetimefestival }}
         </p>
 
         <div class="modal-actions">
@@ -111,6 +137,33 @@ function mapSearchUrl(place) {
   object-fit: cover;
 }
 
+.modal-image .img-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-size: 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index: 3;
+  cursor: pointer;
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.modal-image .img-nav.left { left: 10px }
+.modal-image .img-nav.right { right: 10px }
+
+.modal-image .img-nav:hover {
+  background: rgba(0,0,0,0.6);
+  transform: translateY(-50%) scale(1.05);
+}
+
 .modal-placeholder {
   display: flex;
   align-items: center;
@@ -145,6 +198,15 @@ function mapSearchUrl(place) {
   color: var(--ink-500);
   margin: 0 0 6px;
   line-height: 1.5;
+}
+
+.program-content {
+  margin-top: 6px;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  max-height: calc(1.4em * 6); /* 약 6줄 */
+  overflow: auto;
+  padding-right: 6px;
 }
 
 .modal-icon {

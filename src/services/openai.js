@@ -15,7 +15,14 @@ export async function askChatbot(userMessage, contextText, history = []) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
 
   if (!apiKey) {
-    throw new Error('NO_API_KEY')
+    // 로컬 폴백: 간단한 키워드 기반 한문장 응답(최대 40자)
+    const q = (userMessage || '').toLowerCase()
+    if (q.includes('맛집') || q.includes('음식')) return '맛집 데이터는 제공되지 않아 안내하기 어려워요.'
+    if (q.includes('축제') || q.includes('공연') || q.includes('행사')) return '부산 주요 축제 정보를 확인해보세요.'
+    if (q.includes('숙박') || q.includes('숙소') || q.includes('호텔') || q.includes('해운대'))
+      return '해운대 숙소 추천을 준비했어요.'
+    if (q.includes('쇼핑')) return '쇼핑할 만한 곳을 몇 곳 골라봤어요.'
+    return '제공된 데이터 기반으로 도와드릴게요.'
   }
 
   const messages = [

@@ -1,0 +1,25 @@
+/* Minimal FullCalendar fallback styles to avoid layout break when CDN is blocked */
+.fc {
+  font-family: inherit;
+}
+.fc .fc-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.fc .fc-button {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.fc .fc-daygrid-event {
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 3px 6px;
+  border: 1px solid #e6eef6;
+}
+/* ensure calendar container doesn't overflow */
+.fc {
+  box-sizing: border-box;
+}

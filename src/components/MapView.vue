@@ -51,8 +51,27 @@ function renderMarkers() {
 
   places.value.forEach((p) => {
     const marker = L.marker([p.lat, p.lng])
-    // 클릭 시 홈 화면과 동일한 PlaceModal을 띄움 (Leaflet 기본 팝업 대신)
-    marker.on('click', () => openModal(p))
+    // 팝업 내용 생성 (카테고리별로 추가 정보 포함)
+    let popupHtml = `<div style="font-weight:700;margin-bottom:6px">${p.title}</div>`
+    if (activeCategory.value === 'festival') {
+      const sd = p.eventstart || ''
+      const ed = p.eventend || ''
+      popupHtml += `<div style="font-size:12px;margin-bottom:4px">${sd || '-'} ${ed ? '— ' + ed : ''}</div>`
+      if (p.playtime) popupHtml += `<div style="font-size:12px">시간: ${p.playtime}</div>`
+    } else {
+      if (p.address) popupHtml += `<div style="font-size:12px">${p.address}</div>`
+    }
+    if (p.tel) popupHtml += `<div style="font-size:12px;margin-top:6px">☎ ${p.tel}</div>`
+
+    marker.bindPopup(popupHtml, { maxWidth: 260 })
+    // 마우스 오버 시 팝업 열기, 아웃 시 닫기 (모바일은 hover 미지원)
+    marker.on('mouseover', () => marker.openPopup())
+    marker.on('mouseout', () => marker.closePopup())
+    // 클릭 시 팝업도 열고 모달도 연다
+    marker.on('click', () => {
+      marker.openPopup()
+      openModal(p)
+    })
     markerLayer.addLayer(marker)
   })
 

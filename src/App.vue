@@ -12,6 +12,9 @@ const route = useRoute()
         LocalHub <span class="logo-sub">부산</span>
       </RouterLink>
       <nav class="tabs">
+        <RouterLink to="/calendar" class="tab" :class="{ active: route.path === '/calendar' }">
+          📅 캘린더
+        </RouterLink>
         <RouterLink to="/map" class="tab" :class="{ active: route.path === '/map' }">
           🗺️ 지도
         </RouterLink>

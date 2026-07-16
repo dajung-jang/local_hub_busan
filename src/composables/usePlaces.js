@@ -27,15 +27,40 @@ export function getCategory(key) {
 export function getPlaces(key) {
   const cat = getCategory(key)
   if (!cat || !cat.data || !cat.data.items) return []
-  return cat.data.items.map((item) => ({
-    id: item.contentid,
-    title: item.title,
-    address: [item.addr1, item.addr2].filter(Boolean).join(' '),
-    tel: item.tel,
-    image: item.firstimage || item.firstimage2 || '',
-    lat: item.mapy ? parseFloat(item.mapy) : null,
-    lng: item.mapx ? parseFloat(item.mapx) : null,
-  }))
+  function parseYMD(ymd) {
+    if (!ymd) return null
+    const s = String(ymd)
+    if (s.length < 8) return null
+    return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`
+  }
+
+  return cat.data.items.map((item) => {
+    const base = {
+      id: item.contentid,
+      title: item.title,
+      address: [item.addr1, item.addr2].filter(Boolean).join(' '),
+      tel: item.tel,
+      image: item.firstimage || item.firstimage2 || '',
+      firstimage: item.firstimage || '',
+      firstimage2: item.firstimage2 || '',
+      lat: item.mapy ? parseFloat(item.mapy) : null,
+      lng: item.mapx ? parseFloat(item.mapx) : null,
+    }
+
+    if (key === 'festival') {
+      return {
+        ...base,
+        eventstart: parseYMD(item.eventstartdate) || null,
+        eventend: parseYMD(item.eventenddate) || null,
+        playtime: item.playtime || '',
+        eventplace: item.eventplace || '',
+        program: item.program || '',
+        usetimefestival: item.usetimefestival || '',
+      }
+    }
+
+    return base
+  })
 }
 
 export function getPlaceById(key, id) {
